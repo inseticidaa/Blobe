@@ -1,6 +1,7 @@
 use actix_web::{web, App, HttpResponse, HttpServer, HttpRequest, middleware::Logger};
 use std::net::Ipv4Addr;
 use std::path::{Path, PathBuf};
+use std::fs;
 use env_logger::Env;
 use std::net::{ToSocketAddrs, SocketAddr, IpAddr};
 
@@ -8,6 +9,7 @@ use std::net::{ToSocketAddrs, SocketAddr, IpAddr};
 #[derive(Debug, Clone)]
 pub enum InstanceError {
     NotImplemented,
+    FileConflict,
     InvalidBindAddr,
     ServerBindError,
 }
@@ -15,7 +17,7 @@ pub enum InstanceError {
 #[derive(Debug, Clone)]
 pub enum InstanceType {
     Proxy(&'static str),
-    Static(PathBuf),
+    Static(&'static str),
     //RandomicBalancer(Vec<>)
 }
 
@@ -23,7 +25,7 @@ pub enum InstanceType {
 pub struct Instance {
     bind_addr: SocketAddr,
     instance_type: InstanceType,
-    server: actix_web::dev::Server,
+    server: actix_web::dev::Server
 }
 
 impl Instance {
@@ -33,9 +35,14 @@ impl Instance {
         instance_type: InstanceType,
     ) -> Result<Self, InstanceError> {
 
+        let mut instance_dirname = "";
+
         match instance_type.clone() {
             // When Instance type is static file server
-            InstanceType::Static(_) => (),
+            // Create file if not exists
+            InstanceType::Static(x) => {
+
+            },
             _ => return Err(InstanceError::NotImplemented)
         }
 

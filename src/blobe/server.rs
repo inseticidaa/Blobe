@@ -6,16 +6,18 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 pub struct Server {
-    blobes: HashMap<&'static str, Instance>,
+    blobes: HashMap<String, Instance>,
 }
 
 impl Server {
+    /// User this to create a new BlobeServer
     pub fn new() -> Self {
         Self {
             blobes: HashMap::new(),
         }
     }
 
+    /// Use this to execute commands on server
     pub fn command(&self, s: String) {
         let commands = s.split(" ").collect::<Vec<_>>();
 
@@ -39,33 +41,54 @@ impl Server {
                 info!(target: "Server", "Config file loaded");
 
                 // Try get instance name
-                let mut instance_name = "";
+                let mut instance_name = String::new();
                 match map.get("name") {
-                    Some(value) => instance_name = value,
+                    Some(value) => instance_name = value.clone(),
                     None => {
                         error!(target: "Nameless Instance", "cant find 'name' on instance config file");
                         return;
                     }                 
                 }
 
-                // Try get instance bind_addr
-                let mut bind_addr = "";
+                //Try get instance bind_addr
+                let mut bind_addr = String::new();
                 match map.get("bind_addr") {
-                    Some(value) => bind_addr = value,
+                    Some(value) => bind_addr = value.clone(),
                     None => {
-                        error!(target: instance_name.clone(), "cant find bind_port on instance config file");
+                        error!(target: instance_name.clone().as_str(), "cant find bind_port on instance config file");
                         return;
                     }                 
                 }
 
-                println!("Isso é apenas um item da configuracao: {}", bind_addr);
+                let mut bind_port: u16 = 1234;
+                match map.get("bind_port") {
+                    Some(value) => bind_port = value.clone().parse::<u16>().unwrap(),
+                    None => {
+                        error!(target: instance_name.clone().as_str(), "cant find bind_port on instance config file");
+                        return;
+                    }                 
+                }
+
+                println!("Isso é apenas um item da configuracao: {}", instance_name);
 
                 self.blobes.insert(
-                    "default",
-                    Instance::create(bind_addr, 8080, InstanceType::Static("default")).unwrap(),
+                    instance_name.clone(),
+                    Instance::create(bind_addr, bind_port, InstanceType::Static(instance_name)).unwrap(),
                 );
             }
-            Err(_) => error!(target: "Server", "Broken config file"),
+            Err(e) => error!(target: "Server", "Broken config file: {}" ,e),
+        }
+    }
+
+    /// This is used to stop all instances, use this before close application
+    pub fn unload_all(&mut self) {
+        info!(target: "Server", "Closing all instances...");
+        for (name, instane) in self.blobes.iter() {
+            info!(target: name, "Closing");
+            instane.stop();
+            // if let Some(instance) = self.blobes.get_mut(name). {
+            //     instance.stop();
+            // }
         }
     }
 

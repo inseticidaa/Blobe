@@ -16,8 +16,8 @@ pub enum InstanceError {
 
 #[derive(Debug, Clone)]
 pub enum InstanceType {
-    Proxy(&'static str),
-    Static(&'static str),
+    Proxy(String),
+    Static(String),
     //RandomicBalancer(Vec<>)
 }
 
@@ -30,7 +30,7 @@ pub struct Instance {
 
 impl Instance {
     pub fn create(
-        bind_addr: &'static str,
+        bind_addr: String,
         bind_port: u16,
         instance_type: InstanceType,
     ) -> Result<Self, InstanceError> {
@@ -76,5 +76,9 @@ impl Instance {
                 })
             }
         }
+    }
+
+    pub fn stop() -> Result<(), ()> {
+        Ok(())
     }
 }

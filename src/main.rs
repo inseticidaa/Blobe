@@ -30,6 +30,7 @@ async fn main() {
                 println!("Line: {}", line);
             }
             Err(ReadlineError::Interrupted) => {
+                server.unload_all();
                 println!("CTRL-C");
                 break;
             }

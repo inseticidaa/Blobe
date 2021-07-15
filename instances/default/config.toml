@@ -1,10 +1,7 @@
-[instance]
 name = "default"
 author = "Alisson Silva"
 version = "0.1.0"
 description = "Default blobe instance"
-
-[server]
 type = "static"
 index_file = "index.html"
 bind_addr = "127.0.0.1"

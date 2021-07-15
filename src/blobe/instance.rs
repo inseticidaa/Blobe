@@ -29,7 +29,7 @@ pub struct Instance {
 }
 
 impl Instance {
-    pub fn new(
+    pub fn create(
         bind_addr: &'static str,
         bind_port: u16,
         instance_type: InstanceType,

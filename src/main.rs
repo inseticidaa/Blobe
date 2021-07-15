@@ -10,9 +10,9 @@ async fn main() {
     env_logger::Builder::from_env(
         env_logger::Env::default()
             .default_filter_or("info")
-            //.default_filter_or("error")
-            //.default_filter_or("warn")
-            //.default_filter_or("debug")
+            .default_filter_or("error")
+            .default_filter_or("warn")
+            .default_filter_or("debug")
             //.default_filter_or("trace")
         ).init();
     

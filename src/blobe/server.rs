@@ -80,16 +80,20 @@ impl Server {
         }
     }
 
-    /// This is used to stop all instances, use this before close application
+    /// Unload all instances
     pub fn unload_all(&mut self) {
-        info!(target: "Server", "Closing all instances...");
-        for (name, instane) in self.blobes.iter() {
-            info!(target: name, "Closing");
-            instane.stop();
-            // if let Some(instance) = self.blobes.get_mut(name). {
-            //     instance.stop();
-            // }
-        }
+        info!(target: "Server", "Unloading all blobe instances...");
+        self.blobes.iter_mut().for_each(|(name, instance)| {
+
+            
+            info!(target: "Server", "Unloading {}...", name);
+            
+            match instance.stop() {
+                Ok(_) => info!(target: "Server", "Unloaded {}", name),
+                Err(_) => warn!(target: "Server", "Cant unload {}, this can cause a problem", name)
+            }
+        });
+        info!(target: "Server", "All instances unloaded");
     }
 
     // Use this to load all instances

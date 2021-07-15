@@ -1,7 +1,7 @@
 use actix_web::{web, App, HttpResponse, HttpServer, HttpRequest, middleware::Logger};
 use std::net::Ipv4Addr;
 use std::path::{Path, PathBuf};
-use std::fs;
+use std::{fs, result};
 use env_logger::Env;
 use std::net::{ToSocketAddrs, SocketAddr, IpAddr};
 
@@ -78,7 +78,9 @@ impl Instance {
         }
     }
 
-    pub fn stop() -> Result<(), ()> {
+    /// Stop instance server
+    pub fn stop(&mut self) -> Result<(), ()> {
+
         Ok(())
     }
 }

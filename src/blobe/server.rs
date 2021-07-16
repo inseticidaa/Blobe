@@ -1,3 +1,5 @@
+use crate::main;
+
 use super::{Instance, InstanceType};
 use git2::Repository;
 use log::{debug, error, info, log_enabled, warn, Level};
@@ -18,13 +20,73 @@ impl Server {
     }
 
     /// Use this to execute commands on server
+    /// Command pattern: module cmd arg1 agr2...
     pub fn command(&self, s: String) {
-        let commands = s.split(" ").collect::<Vec<_>>();
 
-        match commands[0] {
-            "instance" => println!("instance called"),
-            _ => println!("command not found"),
+        if s.is_empty() {
+            return;
+        };
+
+        let command = s.split(" ").collect::<Vec<&str>>();
+
+        // Get the module of command
+        let mut module = "";
+        match command.get(0) {
+            Some(value) => module = *value,
+            None => {
+                error!(target: "Server::command()", "It's probably a bug. command module not found.")
+            }
         }
+
+        match module {
+            "instance" => {
+                // Get cmd of module
+                let mut cmd = "";
+                match command.get(1) {
+                    Some(value) => cmd = *value,
+                    None => {
+                        error!(target: "Server", "Type '{} help' to see module commands", module)
+                    }
+                }
+
+                match cmd {
+                    "new" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
+                    "load" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
+                    "stop" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
+                    "pause" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
+                    "resume" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
+                    "list" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
+                    "status" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
+                    _ => error!(target: "Server", "Command not found. Type '{} help' to see module commands.", module)
+                }
+            }
+            _ => error!(target: "Server", "Module not exists. Type 'help' for see all modules."),
+        }
+
+        //warn!(target: "Server", "Command not found. Type 'help' for see all commmands.")
+
+        // if let Some(a) = commands.get(0) {
+        //     match *a {
+        //         "instance" => if let Some(b) = commands.get(1) {
+        //             match *b {
+        //                 // Command handler to generate new instance
+        //                 // Type -> Static | Proxy
+        //                 // command: instance new {name} {bind_addr} {port} {type} [proxy_addr]
+        //                 "new" => info!(target: "Server", "New not implemented"),
+        //                 "list" => info!(target: "Server", "List not implemented"),
+        //                 "load" => info!(target: "Server", "Load not implemented"),
+        //                 "stop" => info!(target: "Server", "Stop not implemented"),
+        //                 "pause" => info!(target: "Server", "Pause not implemented"),
+        //                 "resume" => info!(target: "Server", "Resume not implemented"),
+        //                 "help" => info!(target: "Server", "Help not implemented"),
+        //                 _ => warn!(target: "Server", "Command not found. Type 'help' for see all commmands.")
+        //             }
+        //         },
+        //         _ => {
+        //             warn!(target: "Server", "Command not found. Type 'help' for see all commmands.")
+        //         }
+        //     }
+        // }
     }
 
     // Use this to load and start instance
@@ -47,7 +109,7 @@ impl Server {
                     None => {
                         error!(target: "Nameless Instance", "cant find 'name' on instance config file");
                         return;
-                    }                 
+                    }
                 }
 
                 //Try get instance bind_addr
@@ -57,7 +119,7 @@ impl Server {
                     None => {
                         error!(target: instance_name.clone().as_str(), "cant find bind_port on instance config file");
                         return;
-                    }                 
+                    }
                 }
 
                 let mut bind_port: u16 = 1234;
@@ -66,14 +128,15 @@ impl Server {
                     None => {
                         error!(target: instance_name.clone().as_str(), "cant find bind_port on instance config file");
                         return;
-                    }                 
+                    }
                 }
 
                 println!("Isso é apenas um item da configuracao: {}", instance_name);
 
                 self.blobes.insert(
                     instance_name.clone(),
-                    Instance::create(bind_addr, bind_port, InstanceType::Static(instance_name)).unwrap(),
+                    Instance::create(bind_addr, bind_port, InstanceType::Static(instance_name))
+                        .unwrap(),
                 );
             }
             Err(e) => error!(target: "Server", "Broken config file: {}" ,e),
@@ -84,13 +147,11 @@ impl Server {
     pub fn unload_all(&mut self) {
         info!(target: "Server", "Unloading all blobe instances...");
         self.blobes.iter_mut().for_each(|(name, instance)| {
-
-            
             info!(target: "Server", "Unloading {}...", name);
-            
+
             match instance.stop() {
                 Ok(_) => info!(target: "Server", "Unloaded {}", name),
-                Err(_) => warn!(target: "Server", "Cant unload {}, this can cause a problem", name)
+                Err(_) => warn!(target: "Server", "Cant unload {}, this can cause a problem", name),
             }
         });
         info!(target: "Server", "All instances unloaded");

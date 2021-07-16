@@ -12,7 +12,7 @@ async fn main() {
             .default_filter_or("info")
             .default_filter_or("error")
             .default_filter_or("warn")
-            .default_filter_or("debug")
+            //.default_filter_or("debug")
             //.default_filter_or("trace")
         ).init();
     
@@ -25,9 +25,8 @@ async fn main() {
         let readline = reader.readline(">> ");
         match readline {
             Ok(line) => {
-                server.command(line.clone());
                 reader.add_history_entry(line.as_str());
-                println!("Line: {}", line);
+                server.command(line.clone());
             }
             Err(ReadlineError::Interrupted) => {
                 server.unload_all();

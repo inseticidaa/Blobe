@@ -61,9 +61,7 @@ impl Instance {
         let server_builder =
             HttpServer::new(|| App::new()
                 .service(actix_files::Files::new("/", "instances/default/public").index_file("index.html"))
-                .wrap(Logger::default())
-                .wrap(Logger::new("Default Instance"))
-            )
+            ).workers(1)
                 .bind(bind_addr.clone());
 
         match server_builder {

@@ -51,7 +51,6 @@ impl Server {
                     }
                     // This try loading existing instance
                     "load" => {
-
                         let mut instance_name = "";
                         match command.get(2) {
                             Some(value) => instance_name = *value,
@@ -89,6 +88,7 @@ impl Server {
                     "status" => {
                         warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
                     }
+                    // Clone form git or from other instance
                     "clone" => {
                         warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
                     }

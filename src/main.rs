@@ -28,6 +28,7 @@ async fn main() {
         let readline = reader.readline(">> ");
         match readline {
             Ok(line) => {
+                let line = line.to_lowercase();
                 reader.add_history_entry(line.as_str());
                 println!("{}", line);
                 server.command(line.clone());

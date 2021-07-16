@@ -1,8 +1,5 @@
-use crate::main;
-
 use super::{Instance, InstanceType};
 use git2::Repository;
-use log::{debug, error, info, log_enabled, warn, Level};
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -21,8 +18,7 @@ impl Server {
 
     /// Use this to execute commands on server
     /// Command pattern: module cmd arg1 agr2...
-    pub fn command(&self, s: String) {
-
+    pub fn command(&mut self, s: String) {
         if s.is_empty() {
             return;
         };
@@ -50,47 +46,64 @@ impl Server {
                 }
 
                 match cmd {
-                    "new" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
-                    "load" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
-                    "stop" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
-                    "pause" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
-                    "resume" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
-                    "list" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
-                    "status" => warn!(target: "Server", "Sorry, but this command has not yet been implemented."),
-                    _ => error!(target: "Server", "Command not found. Type '{} help' to see module commands.", module)
+                    "new" => {
+                        warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
+                    }
+                    // This try loading existing instance
+                    "load" => {
+
+                        let mut instance_name = "";
+                        match command.get(2) {
+                            Some(value) => instance_name = *value,
+                            None => {
+                                error!(target: "Loader", "Bad request. you dont send instance name: 'instance load ???'. Try again... example: instance load my-website");
+                                return;
+                            }
+                        }
+
+                        let instances_folder = Path::new("instances");
+                        let instances_folder: PathBuf = instances_folder.join(instance_name);
+
+                        info!(target: "Server", "Try loading {}", instance_name);
+                        
+
+                        if instances_folder.exists() {
+                            info!(target: "Server", "Aquivo encontrado.");
+                            self.load_instance(instances_folder);                        
+                        } else {
+                            error!(target: "Server", "the {} instance folder does not exist. Try 'instance new {}', to generate a new instance.", instance_name, instance_name);
+                        }
+                    }
+                    "stop" => {
+                        warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
+                    }
+                    "pause" => {
+                        warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
+                    }
+                    "resume" => {
+                        warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
+                    }
+                    "list" => {
+                        warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
+                    }
+                    "status" => {
+                        warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
+                    }
+                    "clone" => {
+                        warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
+                    }
+                    _ => {
+                        error!(target: "Server", "Command not found. Type '{} help' to see module commands.", module)
+                    }
+                    
                 }
             }
             _ => error!(target: "Server", "Module not exists. Type 'help' for see all modules."),
         }
-
-        //warn!(target: "Server", "Command not found. Type 'help' for see all commmands.")
-
-        // if let Some(a) = commands.get(0) {
-        //     match *a {
-        //         "instance" => if let Some(b) = commands.get(1) {
-        //             match *b {
-        //                 // Command handler to generate new instance
-        //                 // Type -> Static | Proxy
-        //                 // command: instance new {name} {bind_addr} {port} {type} [proxy_addr]
-        //                 "new" => info!(target: "Server", "New not implemented"),
-        //                 "list" => info!(target: "Server", "List not implemented"),
-        //                 "load" => info!(target: "Server", "Load not implemented"),
-        //                 "stop" => info!(target: "Server", "Stop not implemented"),
-        //                 "pause" => info!(target: "Server", "Pause not implemented"),
-        //                 "resume" => info!(target: "Server", "Resume not implemented"),
-        //                 "help" => info!(target: "Server", "Help not implemented"),
-        //                 _ => warn!(target: "Server", "Command not found. Type 'help' for see all commmands.")
-        //             }
-        //         },
-        //         _ => {
-        //             warn!(target: "Server", "Command not found. Type 'help' for see all commmands.")
-        //         }
-        //     }
-        // }
     }
 
     // Use this to load and start instance
-    async fn load_instance(&mut self, path: PathBuf) {
+    fn load_instance(&mut self, path: PathBuf) {
         info!(target: "Server", "try loading: {:?}", path.to_str().unwrap());
 
         let mut config = config::Config::default();
@@ -144,17 +157,16 @@ impl Server {
     }
 
     /// Unload all instances
-    pub fn unload_all(&mut self) {
+    pub async fn unload_all(&mut self) {
         info!(target: "Server", "Unloading all blobe instances...");
-        self.blobes.iter_mut().for_each(|(name, instance)| {
-            info!(target: "Server", "Unloading {}...", name);
 
-            match instance.stop() {
+        for (name, instance) in self.blobes.iter_mut() {
+            match instance.stop().await {
                 Ok(_) => info!(target: "Server", "Unloaded {}", name),
                 Err(_) => warn!(target: "Server", "Cant unload {}, this can cause a problem", name),
             }
-        });
-        info!(target: "Server", "All instances unloaded");
+        };        
+        info!(target: "Server", "All instances unloaded.");
     }
 
     // Use this to load all instances
@@ -194,7 +206,7 @@ impl Server {
             let instance_path = instance_path.path();
 
             if instance_path.is_dir() {
-                self.load_instance(instance_path).await;
+                self.load_instance(instance_path);
             }
         }
     }

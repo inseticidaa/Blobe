@@ -79,7 +79,9 @@ impl Instance {
     }
 
     /// Stop instance server
-    pub fn stop(&mut self) -> Result<(), ()> {
+    pub async fn stop(&mut self) -> Result<(), ()> {
+
+        self.server.stop(true).await;
 
         Ok(())
     }

@@ -49,11 +49,11 @@ impl Server {
                     "new" => {
                         warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
                     }
-                    // This try loading existing instance
+                    // Load try loading instance from instances folder, using name of instance folder;
                     "load" => {
-                        let mut instance_name = "";
+                        let mut instance_folder_name = "";
                         match command.get(2) {
-                            Some(value) => instance_name = *value,
+                            Some(value) => instance_folder_name = *value,
                             None => {
                                 error!(target: "Loader", "Bad request. you dont send instance name: 'instance load ???'. Try again... example: instance load my-website");
                                 return;
@@ -61,16 +61,16 @@ impl Server {
                         }
 
                         let instances_folder = Path::new("instances");
-                        let instances_folder: PathBuf = instances_folder.join(instance_name);
+                        let instances_folder: PathBuf = instances_folder.join(instance_folder_name);
 
-                        info!(target: "Server", "Try loading {}", instance_name);
+                        info!(target: "Server", "Try loading {}", instance_folder_name);
                         
 
                         if instances_folder.exists() {
                             info!(target: "Server", "Aquivo encontrado.");
                             self.load_instance(instances_folder);                        
                         } else {
-                            error!(target: "Server", "the {} instance folder does not exist. Try 'instance new {}', to generate a new instance.", instance_name, instance_name);
+                            error!(target: "Server", "the {} instance folder does not exist. Try 'instance new {}', to generate a new instance.", instance_folder_name, instance_folder_name);
                         }
                     }
                     "stop" => {
@@ -88,7 +88,6 @@ impl Server {
                     "status" => {
                         warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
                     }
-                    // Clone form git or from other instance
                     "clone" => {
                         warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
                     }

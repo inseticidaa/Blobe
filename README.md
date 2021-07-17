@@ -30,6 +30,7 @@ Web Server
 |   Command |            Description                      | Status |
 |----------|---------------------------------------------|--------|
 | instance load {folder_name} |  If you need load instance after server already on, you can add instance to instances folder and load using instance folder name | implemented but in tests  |
+| instance list | Show list of avaible instances | implemented but in tests  | 
 | | | | 
  
 

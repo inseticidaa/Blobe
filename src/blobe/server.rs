@@ -1,4 +1,6 @@
 use super::{Instance, InstanceType};
+use cli_table::CellStruct;
+use cli_table::{format::Justify, print_stdout, Cell, Style, Table};
 use git2::Repository;
 use std::collections::HashMap;
 use std::fs;
@@ -64,18 +66,26 @@ impl Server {
                         let instances_folder: PathBuf = instances_folder.join(instance_folder_name);
 
                         info!(target: "Server", "Try loading {}", instance_folder_name);
-                        
 
                         if instances_folder.exists() {
                             info!(target: "Server", "Aquivo encontrado.");
-                            self.load_instance(instances_folder);                        
+                            self.load_instance(instances_folder);
                         } else {
                             error!(target: "Server", "the {} instance folder does not exist. Try 'instance new {}', to generate a new instance.", instance_folder_name, instance_folder_name);
                         }
                     }
                     "stop" => {
-                        warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
+                        let mut instance_name = "";
+                        match command.get(2) {
+                            Some(value) => instance_name = *value,
+                            None => {
+                                error!(target: "Loader", "Bad request. you dont send instance name: 'instance stop ???'. Try again... example: instance load my-website");
+                                return;
+                            }
+                        }
+                        self.stop_instance(instance_name.to_string());
                     }
+                    "unload" => (),
                     "pause" => {
                         warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
                     }
@@ -83,7 +93,32 @@ impl Server {
                         warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
                     }
                     "list" => {
-                        warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
+                        let mut table: Vec<Vec<CellStruct>>= Vec::new();
+
+                        for (name, instance) in self.blobes.iter() {
+
+                            let info = instance.get_info();
+
+                            let mut status = String::new();
+                            if let Some(data) = info.get("status") {
+                                status = data.clone();
+                            }
+
+                            let mut bind_addr = String::new();
+                            if let Some(data) = info.get("bind_addr") {
+                                bind_addr = data.clone();
+                            }
+
+                            table.push(vec![name.cell(), bind_addr.cell()]);
+                        }
+
+
+                        let table = table.table().title(vec![
+                            "Name".cell().bold(true),
+                            "Bind Addr".cell().bold(true),
+                        ]);
+                        
+                        print_stdout(table);
                     }
                     "status" => {
                         warn!(target: "Server", "Sorry, but this command has not yet been implemented.")
@@ -94,7 +129,6 @@ impl Server {
                     _ => {
                         error!(target: "Server", "Command not found. Type '{} help' to see module commands.", module)
                     }
-                    
                 }
             }
             _ => error!(target: "Server", "Module not exists. Type 'help' for see all modules."),
@@ -164,8 +198,37 @@ impl Server {
                 Ok(_) => info!(target: "Server", "Unloaded {}", name),
                 Err(_) => warn!(target: "Server", "Cant unload {}, this can cause a problem", name),
             }
-        };        
+        }
         info!(target: "Server", "All instances unloaded.");
+    }
+
+    /// Unload specify instance
+    pub async fn unload_instance(&mut self, instance_name: String) {
+        info!(target: "Server", "Try unload {}.", instance_name.as_str());
+        match self.blobes.get_mut(instance_name.as_str()) {
+            Some(instance) => {
+                instance.stop();
+                self.blobes.remove(instance_name.as_str());
+                info!(target: "Server", "{} instance has been unloaded!", instance_name.as_str());
+            }
+            None => {
+                error!(target: "Server", "Cant find '{}'", instance_name.as_str());
+            }
+        }
+    }
+
+    /// stop http server instance
+    pub async fn stop_instance(&mut self, instance_name: String) {
+        info!(target: "Server", "Try unload {}.", instance_name.as_str());
+        match self.blobes.get_mut(instance_name.as_str()) {
+            Some(instance) => {
+                instance.stop();
+                info!(target: "Server", "{} instance has been unloaded!", instance_name.as_str());
+            }
+            None => {
+                error!(target: "Server", "Cant find '{}'", instance_name.as_str());
+            }
+        }
     }
 
     // Use this to load all instances

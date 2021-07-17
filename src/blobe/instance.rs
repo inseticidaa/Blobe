@@ -1,4 +1,5 @@
 use actix_web::{web, App, HttpResponse, HttpServer, HttpRequest, middleware::Logger};
+use std::collections::HashMap;
 use std::net::Ipv4Addr;
 use std::path::{Path, PathBuf};
 use std::{fs, result};
@@ -25,7 +26,8 @@ pub enum InstanceType {
 pub struct Instance {
     bind_addr: SocketAddr,
     instance_type: InstanceType,
-    server: actix_web::dev::Server
+    server: actix_web::dev::Server,
+    status: String
 }
 
 impl Instance {
@@ -71,6 +73,7 @@ impl Instance {
                     bind_addr,
                     instance_type,
                     server: server.run(),
+                    status: "Running".to_string()
                 })
             }
         }
@@ -78,9 +81,17 @@ impl Instance {
 
     /// Stop instance server
     pub async fn stop(&mut self) -> Result<(), ()> {
-
         self.server.stop(true).await;
-
         Ok(())
+    }
+
+    pub fn get_info(&self) -> HashMap<&'static str, String> {
+        let mut info: HashMap<&'static str, String> = HashMap::new();
+
+        info.insert("status", self.status.clone());
+        info.insert("bind_addr", self.bind_addr.to_string());
+        info.insert("type", String::from("Not implemented"));
+
+        info
     }
 }
